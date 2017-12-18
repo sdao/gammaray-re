@@ -14,4 +14,8 @@ let cd = Vec.cross(c, d);
 let cdstr = Printf.sprintf("%f %f %f", cd.x, cd.y, cd.z);
 print_endline(Vec.repr(cd));
 
-let m = Mat.from_array(Array.make_matrix(4, 5, 0.0));
+open Mat.Ops;
+let m = Mat.translation(Vec.xyz(1.0, 2.0, 3.0));
+let s = Mat.scale(3.0);
+print_endline(Mat.repr(s *# m));
+print_endline(Mat.repr(m *# s));
