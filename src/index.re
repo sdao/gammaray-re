@@ -19,3 +19,12 @@ let m = Mat.translation(Vec.xyz(1.0, 2.0, 3.0));
 let s = Mat.scale(3.0);
 print_endline(Mat.repr(s *# m));
 print_endline(Mat.repr(m *# s));
+
+let film = Film.create_test(40, 30);
+let exr = Exr.create(40, 30);
+Exr.update(exr, film);
+
+let out_chan = open_out_bin("sample.exr");
+Exr.output_exr(out_chan, exr);
+print_endline(Printf.sprintf("size=%d", Buffer.length(exr.static_buffer) + Buffer.length(exr.data_buffer)));
+flush(out_chan);

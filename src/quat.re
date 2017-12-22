@@ -1,4 +1,4 @@
-type quat = {
+type t = {
     real: float,
-    im: Vec.vec3,
+    im: Vec.t,
 };

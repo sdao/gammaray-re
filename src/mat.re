@@ -1,4 +1,4 @@
-type mat4 = {
+type t = {
     storage: array(array(float))
 };
 
@@ -8,7 +8,7 @@ type mat4 = {
  * module. The operators are all of the form ?# where the pound sign sort of looks like a matrix.
  */
 module Ops = {
-    let (*#) = (a: mat4, b: mat4) => {
+    let (*#) = (a: t, b: t) => {
         let data = Array.make_matrix(4, 4, 0.0);
         data[0][0] = a.storage[0][0] *. b.storage[0][0] +.
                      a.storage[0][1] *. b.storage[1][0] +.
@@ -100,7 +100,7 @@ let diagonal = (k: float) => {
 let zero = diagonal(0.0);
 let identity = diagonal(1.0);
 
-let repr = (m: mat4) => {
+let repr = (m: t) => {
     let s = m.storage;
     Printf.sprintf("((%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f))",
             s[0][0], s[0][1], s[0][2], s[0][3],
@@ -118,7 +118,7 @@ let scale = (k : float) => {
     {storage: data}
 };
 
-let translation = (translate: Vec.vec3) => {
+let translation = (translate: Vec.t) => {
     let data = Array.make_matrix(4, 4, 0.0);
     data[0][0] = 1.0;
     data[1][1] = 1.0;
@@ -130,7 +130,7 @@ let translation = (translate: Vec.vec3) => {
     {storage: data}
 };
 
-let rotation = (rotate: Quat.quat) => {
+let rotation = (rotate: Quat.t) => {
     let r = rotate.real;
     let i = rotate.im;
 
@@ -158,7 +158,7 @@ let rotation = (rotate: Quat.quat) => {
     {storage: data}
 };
 
-let transpose = (m: mat4) => {
+let transpose = (m: t) => {
     let data = Array.make_matrix(4, 4, 0.0);
     for (row in 0 to 3) {
         for (col in 0 to 3) {
@@ -170,7 +170,7 @@ let transpose = (m: mat4) => {
 
 /** Determinant of 3x3 submatrix given by three rows and columns. */
 let determinant3 =
-    (m: mat4, r1: int, r2: int, r3: int, c1: int, c2: int, c3: int) =>
+    (m: t, r1: int, r2: int, r3: int, c1: int, c2: int, c3: int) =>
 {
     let s = m.storage;
 
@@ -182,13 +182,13 @@ let determinant3 =
         -. s[r1][c3] *. s[r2][c2] *. s[r3][c1]
 };
 
-let determinant = (m: mat4) =>
+let determinant = (m: t) =>
     ~-. m.storage[0][3] *. determinant3(m, 1, 2, 3, 0, 1, 2)
      +. m.storage[1][3] *. determinant3(m, 0, 2, 3, 0, 1, 2)
      -. m.storage[2][3] *. determinant3(m, 0, 1, 3, 0, 1, 2)
      +. m.storage[3][3] *. determinant3(m, 0, 1, 2, 0, 1, 2);
 
-let invert = (m: mat4) => {
+let invert = (m: t) => {
     let s = m.storage;
     
     let data = Array.make_matrix(4, 4, 0.0);

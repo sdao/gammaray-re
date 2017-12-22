@@ -1,4 +1,4 @@
-type vec3 = {
+type t = {
     x: float,
     y: float,
     z: float,
@@ -11,31 +11,31 @@ type vec3 = {
  * reminiscent of the arrow-above notation for mathematical vectors.
  */
 module Ops = {
-    let (+^) = (a: vec3, b: vec3) => {
+    let (+^) = (a: t, b: t) => {
         {x: a.x +. b.x, y: a.y +. b.y, z: a.z +. b.z}
     };
 
-    let (-^) = (a: vec3, b: vec3) => {
+    let (-^) = (a: t, b: t) => {
         {x: a.x -. b.x, y: a.y -. b.y, z: a.z -. b.z}
     };
 
-    let (*^) = (a: vec3, b: vec3) => {
+    let (*^) = (a: t, b: t) => {
         {x: a.x *. b.x, y: a.y *. b.y, z: a.z *. b.z}
     };
 
-    let (/^) = (a: vec3, b: vec3) => {
+    let (/^) = (a: t, b: t) => {
         {x: a.x /. b.x, y: a.y /. b.y, z: a.z /. b.z}
     };
 };
 
 open Ops;
 
-/** Standard constructor for vec3 from x/y/z values. */
+/** Standard constructor for t from x/y/z values. */
 let xyz = (x: float, y: float, z: float) => {
     {x: x, y: y, z: z}
 };
 
-/** Standard constructor for vec3 filling x/y/z with k. */
+/** Standard constructor for t filling x/y/z with k. */
 let from_scalar = (k: float) => {
     {x: k, y: k, z: k}
 };
@@ -60,45 +60,45 @@ let red = x_axis;
 let green = y_axis;
 let blue = z_axis;
 
-let repr = (a: vec3) => {
+let repr = (a: t) => {
     Printf.sprintf("(%f, %f, %f)", a.x, a.y, a.z)
 };
 
-let cross = (a: vec3, b: vec3) => {
+let cross = (a: t, b: t) => {
     xyz(
         (a.y *. b.z) -. (a.z *. b.y),
         (a.z *. b.x) -. (a.x *. b.z),
         (a.x *. b.y) -. (a.y *. b.x))
 };
 
-let dot = (a: vec3, b: vec3) => {
+let dot = (a: t, b: t) => {
     (a.x *. b.x) +. (a.y *. b.y) +. (a.z *. b.z);
 };
 
-let is_exactly_zero = (v: vec3) => {
+let is_exactly_zero = (v: t) => {
     v.x == 0.0 && v.y == 0.0 && v.z == 0.0
 };
 
-let is_nearly_zero = (v: vec3) => {
+let is_nearly_zero = (v: t) => {
     Math.is_nearly_zero(dot(v, v))
 };
 
-let is_close = (a: vec3, b: vec3, eps: float) => {
+let is_close = (a: t, b: t, eps: float) => {
     Math.is_close(a.x, b.x, eps) &&
             Math.is_close(a.y, b.y, eps) &&
             Math.is_close(a.z, b.z, eps)
 };
 
-let magnitude = (v: vec3) => {
+let magnitude = (v: t) => {
     sqrt(dot(v, v))
 };
 
-let normalized = (v: vec3) => {
+let normalized = (v: t) => {
     let length = magnitude(v);
     xyz(v.x /. length, v.y /. length, v.z /. length)
 };
 
-let comp_sqrt = (v: vec3) => {
+let comp_sqrt = (v: t) => {
     xyz(sqrt(v.x), sqrt(v.y), sqrt(v.z))
 };
 
@@ -107,7 +107,7 @@ let comp_sqrt = (v: vec3) => {
  * and the other two orthogonal vectors will be generated from it.
  * Taken from page 63 of Pharr & Humphreys' Physically-Based Rendering 2e.
  */
-let coord_system = (v1: vec3) => {
+let coord_system = (v1: t) => {
     if (abs_float(v1.x) > abs_float(v1.y)) {
         let inv_len = 1.0 /. sqrt((v1.x *. v1.x) +. (v1.z *. v1.z));
         let v2 = xyz(~-.v1.z *. inv_len, 0.0, v1.x *. inv_len);
@@ -129,7 +129,7 @@ let coord_system = (v1: vec3) => {
  * tangent, y is the weight of the binormal, and z is the weight of the
  * normal.
  */
-let world_to_local = (v: vec3, tangent: vec3, binormal: vec3, normal: vec3) =>
+let world_to_local = (v: t, tangent: t, binormal: t, normal: t) =>
 {
     xyz(dot(v, tangent), dot(v, binormal), dot(v, normal))
 };
@@ -139,7 +139,7 @@ let world_to_local = (v: vec3, tangent: vec3, binormal: vec3, normal: vec3) =>
  * should be (x, y, z), where x is the weight of the tangent, y is the weight
  * of the binormal, and z is the weight of the normal.
  */
-let local_to_world = (v: vec3, tangent: vec3, binormal: vec3, normal: vec3) =>
+let local_to_world = (v: t, tangent: t, binormal: t, normal: t) =>
 {
     xyz(
         (tangent.x *. v.x) +. (binormal.x *. v.y) +. (normal.x *. v.z),
@@ -147,14 +147,14 @@ let local_to_world = (v: vec3, tangent: vec3, binormal: vec3, normal: vec3) =>
         (tangent.z *. v.x) +. (binormal.z *. v.y) +. (normal.z *. v.z))
 };
 
-let cos_theta = (v: vec3) => v.z;
-let cos2_theta = (v: vec3) => v.z *. v.z;
-let abs_cos_theta = (v: vec3) => abs_float(v.z);
-let sin2_theta = (v: vec3) => max(0.0, 1.0 -. cos2_theta(v));
-let sin_theta = (v: vec3) => sqrt(sin2_theta(v));
-let tan_theta = (v: vec3) => sin_theta(v) /. cos_theta(v);
-let tan2_theta = (v: vec3) => sin2_theta(v) /. cos2_theta(v);
-let cos_phi = (v: vec3) => {
+let cos_theta = (v: t) => v.z;
+let cos2_theta = (v: t) => v.z *. v.z;
+let abs_cos_theta = (v: t) => abs_float(v.z);
+let sin2_theta = (v: t) => max(0.0, 1.0 -. cos2_theta(v));
+let sin_theta = (v: t) => sqrt(sin2_theta(v));
+let tan_theta = (v: t) => sin_theta(v) /. cos_theta(v);
+let tan2_theta = (v: t) => sin2_theta(v) /. cos2_theta(v);
+let cos_phi = (v: t) => {
     let sin_t = sin_theta(v);
     if (sin_t == 0.0) {
         1.0
@@ -163,8 +163,8 @@ let cos_phi = (v: vec3) => {
         Math.clamp(v.x /. sin_t, -1.0, 1.0)
     }
 };
-let cos2_phi = (v: vec3) => cos_phi(v) *. cos_phi(v);
-let sin_phi = (v: vec3) => {
+let cos2_phi = (v: t) => cos_phi(v) *. cos_phi(v);
+let sin_phi = (v: t) => {
     let sin_t = sin_theta(v);
     if (sin_t == 0.0) {
         0.0
@@ -173,20 +173,20 @@ let sin_phi = (v: vec3) => {
         Math.clamp(v.y /. sin_t, -1.0, 1.0)
     }
 };
-let sin2_phi = (v: vec3) => sin_phi(v) *. sin_phi(v);
+let sin2_phi = (v: t) => sin_phi(v) *. sin_phi(v);
 
 /**
  * Determines if two vectors in the same local coordinate space are in the
  * same hemisphere.
  */
-let is_local_same_hemisphere = (a: vec3, b: vec3) => {
+let is_local_same_hemisphere = (a: t, b: t) => {
     a.z *. b.z > 0.0
 };
 
 /**
  * Luminance of an RGB color stored in a vector.
  */
-let luminance = (v: vec3) => {
+let luminance = (v: t) => {
     (0.21 *. v.x) +. (0.71 *. v.y) +. (0.08 *. v.z)
 };
 
@@ -194,7 +194,7 @@ let luminance = (v: vec3) => {
  * Interprets this vector as a color; returns a version normalized by luminance
  * to isolate hue and saturation.
  */
-let tint = (v: vec3) => {
+let tint = (v: t) => {
     let lume = luminance(v);
     if (lume > 0.0) {
         v /^ from_scalar(lume)
@@ -208,7 +208,7 @@ let tint = (v: vec3) => {
  * Reflects a vector over a surface normal. The original and reflected vectors both
  * point away from the surface. (This produces the opposite result of GLSL reflect.)
  */
-let reflect = (v: vec3, n: vec3) => {
+let reflect = (v: t, n: t) => {
     let k = 2.0 *. dot(n, v);
     xyz(
         (n.x *. k) -. v.x,
@@ -221,7 +221,7 @@ let reflect = (v: vec3, n: vec3) => {
  * refracted vectors both point away from the surface. (This produces a different result
  * from GLSL refract.)
  */
-let refract = (v: vec3, n: vec3, eta: float) => {
+let refract = (v: t, n: t, eta: float) => {
     let cos_theta_in = dot(n, v);
     let sin2_theta_in = max(0.0, 1.0 -. (cos_theta_in *. cos_theta_in));
     let sin2_theta_trans = eta *. eta *. sin2_theta_in;
@@ -235,11 +235,11 @@ let refract = (v: vec3, n: vec3, eta: float) => {
     }
 };
 
-let is_finite = (v: vec3) => {
+let is_finite = (v: t) => {
     Math.is_finite(v.x) && Math.is_finite(v.y) && Math.is_finite(v.z)
 };
 
-let lerp = (a: vec3, b: vec3, k: float) => {
+let lerp = (a: t, b: t, k: float) => {
     xyz(
         Math.lerp(a.x, b.x, k),
         Math.lerp(a.y, b.y, k),
