@@ -1,20 +1,15 @@
+open Vec.Ops;
+
 type t = {
     real: float,
     im: Vec.t,
 };
 
-let identity = {real: 1.0, im: Vec.zero};
-
-let length_squared = (a: t) => {
-    (a.real *. a.real) +. Vec.dot(a.im, a.im)
-};
-
-let scale = (a: t, k: float) => {
-    Vec.Ops.(
-        {real: a.real *. k, im: a.im *^ Vec.from_scalar(k)}
-    )
-};
-
+/**
+ * Infix operators for Quat module.
+ * You can `open Quat::Ops` to use them without having to open the entire
+ * module. The operators are all of the form ?%.
+ */
 module Ops = {
     let (*%) = (a: t, b: t) => {
         let r1 = a.real;
@@ -33,9 +28,12 @@ module Ops = {
     };
 
     let (~-%) = (a: t) => {
-        let lsq = length_squared(a);
-        Vec.Ops.(
-            {real: a.real /. lsq, im: (~-^a.im) /^ Vec.from_scalar(lsq)}
-        )
+        let lsq = (a.real *. a.real) +. Vec.dot(a.im, a.im);
+        {real: a.real /. lsq, im: (~-^a.im) /^ Vec.from_scalar(lsq)}
     };
 };
+
+let identity = {real: 1.0, im: Vec.zero};
+
+/** Scales the rotation of the quaternion by the given amount. */
+let scale = (a: t, k: float) => {real: a.real *. k, im: a.im *^ Vec.from_scalar(k)};

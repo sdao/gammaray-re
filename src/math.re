@@ -19,10 +19,16 @@ let clamp = (x, a, b) =>
 
 let lerp = (a, b, k) => a +. (k *. (b -. a));
 
-let is_finite = (x: float) =>
+let is_finite = (x: float) => {
     switch (classify_float(x)) {
         | FP_normal => true
         | FP_subnormal => true
         | FP_zero => true
         | _ => false
-    };
+    }
+};
+
+/** For error correction/reduction. */
+let gamma = (n: float) => {
+    (n *. epsilon_float) /. (1.0 -. (n *. epsilon_float))
+};

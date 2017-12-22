@@ -3,8 +3,8 @@ type t = {
 };
 
 /**
- * Infix operators for Matrix module.
- * You can `open Vec::Ops` to use them without having to open the entire
+ * Infix operators for Mat module.
+ * You can `open Mat::Ops` to use them without having to open the entire
  * module. The operators are all of the form ?# where the pound sign sort of looks like a matrix.
  */
 module Ops = {
