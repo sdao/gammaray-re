@@ -26,6 +26,10 @@ module Ops = {
     let (/^) = (a: t, b: t) => {
         {x: a.x /. b.x, y: a.y /. b.y, z: a.z /. b.z}
     };
+
+    let (~-^) = (a: t) => {
+        {x: ~-.a.x, y: ~-.a.y, z: ~-.a.z}
+    };
 };
 
 open Ops;
