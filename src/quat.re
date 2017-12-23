@@ -35,5 +35,7 @@ module Ops = {
 
 let identity = {real: 1.0, im: Vec.zero};
 
+let create = (real: float, im: Vec.t) => {real: real, im: im};
+
 /** Scales the rotation of the quaternion by the given amount. */
 let scale = (a: t, k: float) => {real: a.real *. k, im: a.im *^ Vec.from_scalar(k)};
