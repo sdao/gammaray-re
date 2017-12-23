@@ -1,3 +1,5 @@
+let pi = 4.0 *. atan(1.0);
+
 let is_close = (a: float, b: float, eps: float) => {
     abs_float(a -. b) < eps
 };
