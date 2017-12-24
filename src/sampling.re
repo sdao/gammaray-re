@@ -115,6 +115,7 @@ module GaussianDistribution = {
         (kn, wn, fn)
     };
 
+    /** Samples a number from the standard normal distribution. */
     let sample = (r: rng) => {
         let hz = next_int32(r);
         let iz = Int32.to_int(hz) land 127;
@@ -230,12 +231,139 @@ module CosineSampleHemisphere = {
 
 /* Uniform distribution over unit sphere surface area. */
 module UniformSampleSphere = {
+    let sample = (r: rng) => {
+        /* See MathWorld <http://mathworld.wolfram.com/SpherePointPicking.html>. */
+        let x = GaussianDistribution.sample(r);
+        let y = GaussianDistribution.sample(r);
+        let z = GaussianDistribution.sample(r);
+        let a = 1.0 /. sqrt(x *. x +. y *. y +. z *. z);
+        Vec.xyz(a *. x, a *. y, a *. z)
+    };
+
     /**
      * Returns the probability that any solid angle was sampled uniformly
      * from a unit sphere.
      */
     let pdf = () => {
         1.0 /. _steradians_per_sphere
+    };
+};
+
+/* Uniform distribution over solid angles within a cone. */
+module UniformSampleCone = {
+    /**
+     * Generates a random ray in a cone around the positive z-axis, uniformly
+     * with respect to solid angle.
+     *
+     * Handy Mathematica code for checking that this works:
+     * \code
+     * R[a_] := (h = Cos[Pi/2];
+     *   z = RandomReal[{h, 1}];
+     *   t = RandomReal[{0, 2*Pi}];
+     *   r = Sqrt[1 - z^2];
+     *   x = r*Cos[t];
+     *   y = r*Sin[t];
+     *   {x, y, z})
+     *
+     * ListPointPlot3D[Map[R, Range[1000]], BoxRatios -> Automatic]
+     * \endcode
+     *
+     * @param half_angle the half-angle of the cone's opening; must be between 0
+     *                   and Pi/2 and in radians
+     */
+    let sample = (r: rng, half_angle: float) => {
+        let h = cos(half_angle);
+        let z = next_float_range(r, h, 1.0);
+        let t = next_float_range(r, 0.0, Math.pi *. 2.0);
+        let r = sqrt(1.0 -. (z *. z));
+        let x = r *. cos(t);
+        let y = r *. sin(t);
+
+        Vec.xyz(x, y, z)
+    };
+
+    /**
+     * Returns the proabability that the given solid angle was sampled
+     * uniformly from the given cone. The cone is defined by the half-angle of
+     * the subtended (apex) angle. The probability is uniform if the direction
+     * is actually in the cone, and zero if it is outside the cone.
+     *
+     * @param halfAngle the half-angle of the cone
+     * @param direction the direction of the sampled vector
+     * @returns         the probability that the angle was sampled
+     */
+    let pdf = (half_angle: float, direction: Vec.t) => {
+      let cos_half_angle = cos(half_angle);
+      let solid_angle = Math.pi *. 2.0 *. (1.0 -. cos_half_angle);
+      if (Vec.cos_theta(direction) > cos_half_angle) {
+          /* Within the sampling cone. */
+          1.0 /. solid_angle
+      } else {
+          /* Outside the sampling cone. */
+          0.0
+      }
+    };
+};
+
+/** Uniformly samples barycentric coordinates for a triangle. */
+module UniformSampleBarycentric = {
+    let sample = (r: rng) => {
+        let (a, b) = (next_float(r), next_float(r));
+        let sqrt_a = sqrt(a);
+        (1.0 -. sqrt_a, b *. sqrt_a)
+    };
+};
+
+/** Distribution specified by a discrete cumulative distribution function. */
+module CumulativeDistribution = {
+    /**
+     * Modified binary search. Returns the index of value in a or the index in which it should
+     * be inserted to maintain the sort.
+     * The low and high parameters are both inclusive.
+     */
+    let rec _binary_search = (a: array(float), value: float, low: int, high: int) => {
+        if (low == high) {
+            low
+        }
+        else {
+            let mid = (low + high) / 2;
+            if (value <= a[mid]) {
+                _binary_search(a, value, low, mid)
+            }
+            else {
+                _binary_search(a, value, mid + 1, high)
+            }
+        }
+    };
+
+    /**
+     * Samples a bucket using the CDF over buckets.
+     * The first bucket should have non-zero CDF and the last bucket should have 1.0 CDF.
+     * For example, suppose the CDF is:
+     * | Bucket | CDF |
+     * |--------|-----|
+     * |      0 | 0.1 |
+     * |      1 | 0.4 |
+     * |      2 | 0.6 |
+     * |      3 | 0.7 |
+     * |      4 | 1.0 |
+     * The pdf of choosing bucket 3 is CDF(3) - CDF(2) = 0.1.
+     */
+    let sample = (r: rng, cdf: array(float)) => {
+        _binary_search(cdf, next_float(r), 0, Array.length(cdf) - 1)
+    };
+
+    /** Probability of choosing the given bucket from the CDF. See sample() for explanation. */
+    let pdf = (cdf: array(float), bucket: int) => {
+        if (bucket < 0 || bucket >= Array.length(cdf)) {
+            0.0
+        }
+        else if (bucket == 0) {
+            cdf[0]
+        }
+        else {
+            cdf[bucket] -. cdf[bucket - 1]
+        }
     };
 };
 
@@ -270,4 +398,29 @@ module Tests = {
         Printf.printf("    variance=%f\n", variance);
         assert(variance > 0.99 && variance < 1.01);
     };
-}
+
+    let test_cumulative = () => {
+        let cdf1 = [|0.3, 1.0|];
+        assert(CumulativeDistribution._binary_search(cdf1, 1.0, 0, 1) == 1);
+        assert(CumulativeDistribution._binary_search(cdf1, 0.4, 0, 1) == 1);
+        assert(CumulativeDistribution._binary_search(cdf1, 0.3, 0, 1) == 0);
+        assert(CumulativeDistribution._binary_search(cdf1, 0.2, 0, 1) == 0);
+        assert(CumulativeDistribution._binary_search(cdf1, 0.0, 0, 1) == 0);
+
+        let cdf2 = [|1.0|];
+        assert(CumulativeDistribution._binary_search(cdf2, 1.0, 0, 0) == 0);
+        assert(CumulativeDistribution._binary_search(cdf2, 0.5, 0, 0) == 0);
+        assert(CumulativeDistribution._binary_search(cdf2, 0.0, 0, 0) == 0);
+
+        let cdf3 = [|0.1, 0.4, 0.6, 0.7, 1.0|];
+        assert(CumulativeDistribution._binary_search(cdf3, 1.0, 0, 5) == 4);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.8, 0, 5) == 4);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.7, 0, 5) == 3);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.6, 0, 5) == 2);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.5, 0, 5) == 2);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.4, 0, 5) == 1);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.2, 0, 5) == 1);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.1, 0, 5) == 0);
+        assert(CumulativeDistribution._binary_search(cdf3, 0.0, 0, 5) == 0);
+    }
+};

@@ -1,1 +1,1 @@
-let gaussians = Sampling.Tests.test_gaussian();
+Sampling.Tests.test_cumulative();
