@@ -1,5 +1,10 @@
 open Vec.Ops;
 
+/**
+ * A ray in 3-d space with origin and direction.
+ * The direction need not be unit-length, but the length will affect parametric computations like
+ * at(...).
+ */
 type t = {
     origin: Vec.t,
     dir: Vec.t
@@ -18,8 +23,10 @@ let _ray_push_dist = Vec.from_scalar(1.0e-3);
 
 let zero = {origin: Vec.zero, dir: Vec.zero};
 
+/** Creates a ray with given origin and direction. */
 let create = (origin: Vec.t, direction: Vec.t) => {origin: origin, dir: direction};
 
+/** Returns the parametric position along the ray at the given parameter. */
 let at = (a: t, k: float) => a.origin +^ (a.dir *^ Vec.from_scalar(k));
 
 /** Pre-computes some data used to accelerate intersection computations. */
@@ -36,6 +43,7 @@ let compute_intersection_data = (a: t) => {
     }
 };
 
+/** Slightly move the origin of the ray in its direction to avoid self-intersection. */
 let nudge = (a: t) => {
     {origin: a.origin +^ (a.dir *^ _ray_push_dist), dir: a.dir}
 };

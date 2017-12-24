@@ -1,3 +1,4 @@
+/** 3-d column vector. Used for both points and directions. */
 type t = {
     x: float,
     y: float,
@@ -11,22 +12,27 @@ type t = {
  * reminiscent of the arrow-above notation for mathematical vectors.
  */
 module Ops = {
+    /** Component-wise addition. */
     let (+^) = (a: t, b: t) => {
         {x: a.x +. b.x, y: a.y +. b.y, z: a.z +. b.z}
     };
 
+    /** Component-wise subtraction. */
     let (-^) = (a: t, b: t) => {
         {x: a.x -. b.x, y: a.y -. b.y, z: a.z -. b.z}
     };
 
+    /** Component-wise multiplication. */
     let (*^) = (a: t, b: t) => {
         {x: a.x *. b.x, y: a.y *. b.y, z: a.z *. b.z}
     };
 
+    /** Component-wise division. */
     let (/^) = (a: t, b: t) => {
         {x: a.x /. b.x, y: a.y /. b.y, z: a.z /. b.z}
     };
 
+    /** Unary negation of all components. */
     let (~-^) = (a: t) => {
         {x: ~-.a.x, y: ~-.a.y, z: ~-.a.z}
     };
@@ -68,6 +74,7 @@ let repr = (a: t) => {
     Printf.sprintf("(%f, %f, %f)", a.x, a.y, a.z)
 };
 
+/** Cross product of two vectors. */
 let cross = (a: t, b: t) => {
     xyz(
         (a.y *. b.z) -. (a.z *. b.y),
@@ -75,33 +82,40 @@ let cross = (a: t, b: t) => {
         (a.x *. b.y) -. (a.y *. b.x))
 };
 
+/** Dot (scalar) product of two vectors. */
 let dot = (a: t, b: t) => {
     (a.x *. b.x) +. (a.y *. b.y) +. (a.z *. b.z);
 };
 
+/** Whether all vector components are exactly zero. */
 let is_exactly_zero = (v: t) => {
     v.x == 0.0 && v.y == 0.0 && v.z == 0.0
 };
 
+/** Whether the squared magnitude is within epsilon of zero. */
 let is_nearly_zero = (v: t) => {
     Math.is_nearly_zero(dot(v, v))
 };
 
+/** Whether two vectors are component-wise within the given epsilon of each other. */
 let is_close = (a: t, b: t, eps: float) => {
     Math.is_close(a.x, b.x, eps) &&
             Math.is_close(a.y, b.y, eps) &&
             Math.is_close(a.z, b.z, eps)
 };
 
+/** Magnitude (length) of a vector. */
 let magnitude = (v: t) => {
     sqrt(dot(v, v))
 };
 
+/** Returns a normalized (unit-length) copy of the given vector. */
 let normalized = (v: t) => {
     let length = magnitude(v);
     xyz(v.x /. length, v.y /. length, v.z /. length)
 };
 
+/** Component-wise square root. */
 let comp_sqrt = (v: t) => {
     xyz(sqrt(v.x), sqrt(v.y), sqrt(v.z))
 };
@@ -239,10 +253,16 @@ let refract = (v: t, n: t, eta: float) => {
     }
 };
 
+/** Whether all vector components are non-infinity and non-NaN. */
 let is_finite = (v: t) => {
     Math.is_finite(v.x) && Math.is_finite(v.y) && Math.is_finite(v.z)
 };
 
+/**
+ * Linearly interpolates between two vectors given a scale k; when k is 0.0, the value is a,
+ * when k is 1.0, the value is b; otherwise the value is interpolated between a and b, with
+ * extrapolation for k < 0.0 or k > 1.0.
+ */
 let lerp = (a: t, b: t, k: float) => {
     xyz(
         Math.lerp(a.x, b.x, k),

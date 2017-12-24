@@ -1,3 +1,4 @@
+/** 4x4 matrix in row-major order. */
 type t = {
     storage: array(array(float))
 };
@@ -79,6 +80,7 @@ module Ops = {
     };
 };
 
+/** Creates a matrix from a row-major 4x4 (2-d) array. */
 let from_array = (data: array(array(float))) => {
     assert(Array.length(data) == 4);
     assert(Array.length(data[0]) == 4);
@@ -88,6 +90,7 @@ let from_array = (data: array(array(float))) => {
     {storage: data}
 };
 
+/** Creates a matrix of all 0's except for k's running down the diagonal. */
 let diagonal = (k: float) => {
     let data = Array.make_matrix(4, 4, 0.0);
     data[0][0] = k;
@@ -109,6 +112,7 @@ let repr = (m: t) => {
             s[3][0], s[3][1], s[3][2], s[3][3])
 };
 
+/** Creates a matrix representing a uniform scale transformation. */
 let scale = (k : float) => {
     let data = Array.make_matrix(4, 4, 0.0);
     data[0][0] = k;
@@ -118,6 +122,7 @@ let scale = (k : float) => {
     {storage: data}
 };
 
+/** Creates a matrix representing translation by the given vector direction. */
 let translation = (translate: Vec.t) => {
     let data = Array.make_matrix(4, 4, 0.0);
     data[0][0] = 1.0;
@@ -130,6 +135,7 @@ let translation = (translate: Vec.t) => {
     {storage: data}
 };
 
+/** Creates a matrix representing rotation by the given quaternion. */
 let rotation = (rotate: Quat.t) => {
     let r = rotate.real;
     let i = rotate.im;
@@ -158,6 +164,7 @@ let rotation = (rotate: Quat.t) => {
     {storage: data}
 };
 
+/** Returns the transpose of the given matrix. */
 let transpose = (m: t) => {
     let data = Array.make_matrix(4, 4, 0.0);
     for (row in 0 to 3) {
@@ -182,12 +189,14 @@ let determinant3 =
         -. s[r1][c3] *. s[r2][c2] *. s[r3][c1]
 };
 
+/** Returns the determinant of the given matrix. */
 let determinant = (m: t) =>
     ~-. m.storage[0][3] *. determinant3(m, 1, 2, 3, 0, 1, 2)
      +. m.storage[1][3] *. determinant3(m, 0, 2, 3, 0, 1, 2)
      -. m.storage[2][3] *. determinant3(m, 0, 1, 3, 0, 1, 2)
      +. m.storage[3][3] *. determinant3(m, 0, 1, 2, 0, 1, 2);
 
+/** Returns the inversion of the given matrix. */
 let invert = (m: t) => {
     let s = m.storage;
     

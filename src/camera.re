@@ -9,12 +9,13 @@ type t = {
     xform: Xform.t
 };
 
-/* Based on the "Academy format" for 35mm which gives a 1.375:1 ratio. */
 module Constants = {
+    /* Based on the "Academy format" for 35mm which gives a 1.375:1 ratio. */
     let horizontal_aperture_35mm = 2.2;
     let vertical_aperture_35mm = 1.6;
 };
 
+/* Just a camera with some nice preset defaults. */
 let default = {
     focal_length: 5.0,
     horizontal_aperture: Constants.horizontal_aperture_35mm,
@@ -23,6 +24,10 @@ let default = {
     xform: Xform.identity
 };
 
+/**
+ * Creates a camera with the given focal length, horizontal aperture, vertical aperture, f-stop,
+ * rotation (as quaternion), and translation (as vector).
+ */
 let create = (
     focal_length: float,
     horizontal_aperture: float,
@@ -44,8 +49,13 @@ let create = (
     }
 };
 
+/** Pupil radius of the given camera. */
 let pupil_radius = (cam: t) => 0.5 *. (cam.focal_length /. cam.f_stop);
+
+/** Aspect ratio (width.height) of given camera. */
 let aspect_ratio = (cam: t) => cam.horizontal_aperture /. cam.vertical_aperture;
+
+/** Maximum x-y coordinates on the focal plane of the camera's window. */
 let window_max = (cam: t) =>
     (cam.horizontal_aperture /. (cam.focal_length *. 2.0),
      cam.vertical_aperture /. (cam.focal_length *. 2.0));

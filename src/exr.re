@@ -1,3 +1,4 @@
+/** Reusable data record for writing to an EXR file. */
 type t = {
     static_buffer: Buffer.t,
     data_buffer: Buffer.t,
@@ -170,6 +171,7 @@ let _write_channels = (buffer: Buffer.t, film: Film.t) => {
     };
 };
 
+/** Creates exr data with the given width and height. */
 let create = (width: int, height: int) => {
     let static_buffer = Buffer.create(4096);
 
@@ -199,6 +201,11 @@ let create = (width: int, height: int) => {
     }
 };
 
+/**
+ * Updates the EXR data by replacing the image channels with the flattened contents of the given
+ * film. Returns false if the film's dimensions do not match the EXR data's dimensions.
+ * Otherwise returns true if successful.
+ */
 let update = (data: t, film: Film.t) => {
     if (data.width != film.width || data.height != film.height) {
         false
@@ -209,6 +216,11 @@ let update = (data: t, film: Film.t) => {
     }
 };
 
+/**
+ * Writes the EXR data in the EXR binary file format to the given out_channel.
+ * Returns false if update(...) was never called on the EXR data; nothing will be written to the
+ * out_channel. Otherwise returns true if successful.
+ */
 let output_exr = (chan: out_channel, data: t) => {
     if (Buffer.length(data.data_buffer) == 0) {
         false

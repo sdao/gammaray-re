@@ -1,5 +1,6 @@
 open Vec.Ops;
 
+/** Quaternion with a real part and an imaginary part. */
 type t = {
     real: float,
     im: Vec.t,
@@ -11,6 +12,7 @@ type t = {
  * module. The operators are all of the form ?%.
  */
 module Ops = {
+    /** Composes the rotations of two quaternions. */
     let (*%) = (a: t, b: t) => {
         let r1 = a.real;
         let r2 = b.real;
@@ -27,14 +29,17 @@ module Ops = {
         {real: r, im: i}
     };
 
+    /** Inverts the direction of the rotation specified by the quaternion. */
     let (~-%) = (a: t) => {
         let lsq = (a.real *. a.real) +. Vec.dot(a.im, a.im);
         {real: a.real /. lsq, im: (~-^a.im) /^ Vec.from_scalar(lsq)}
     };
 };
 
+/** The identity quaternion, representing no rotation. */
 let identity = {real: 1.0, im: Vec.zero};
 
+/** Creates a quaternion with the specified real and imaginary parts. */
 let create = (real: float, im: Vec.t) => {real: real, im: im};
 
 /** Scales the rotation of the quaternion by the given amount. */

@@ -1,19 +1,23 @@
 open Vec.Ops;
 
+/** Axis-aligned bounding box. */
 type t = {
     min: Vec.t,
     max: Vec.t,
 };
 
+/** Bounding box containing no points. */
 let empty = {
     min: Vec.from_scalar(max_float),
     max: Vec.from_scalar(min_float),
 };
 
+/** Whether the bounding box contains no points. */
 let is_empty = (a: t) => {
     a.min.x >= a.max.x || a.min.y >= a.max.y || a.min.z >= a.max.z
 };
 
+/** Returns a new bounding box containing the union of the given box's points and a new point. */
 let union = (a: t, v: Vec.t) => {
     {
         min: Vec.xyz(min(a.min.x, v.x), min(a.min.y, v.y), min(a.min.z, v.z)),
@@ -21,6 +25,7 @@ let union = (a: t, v: Vec.t) => {
     }
 };
 
+/** Returns a new bounding box containing the combination of two bounding boxes' points. */
 let combine = (a: t, b: t) => {
     {
         min: Vec.xyz(min(a.min.x, b.min.x), min(a.min.y, b.min.y), min(a.min.z, b.min.z)),
@@ -28,6 +33,7 @@ let combine = (a: t, b: t) => {
     }
 };
 
+/** Returns the diagonal of the bounding box from minimum to maximim point. */
 let diagonal = (a: t) => a.max -^ a.min;
 
 /** Returns 0 if the maximum extent is along the X-axis, 1 if Y-axis, 2 if Z-axis. */
@@ -54,6 +60,7 @@ let relative_offset = (a: t, v: Vec.t) => {
     ofs /^ diag
 };
 
+/** Returns the surface area of the bounding box (area of its six sides). */
 let surface_area = (a: t) => {
     let d = diagonal(a);
     d.x *. d.y *. d.z
@@ -69,6 +76,11 @@ let get_bound = (a: t, getx_max: bool) => {
     }
 };
 
+/**
+ * Returns the intersection of the given ray and bounding box.
+ * The data parameter must be pre-computed via Ray.compute_intersection_data and can be re-used
+ * between invocations. The max_dist limits how far along the ray to search for an intersection.
+ */
 let intersect = (a: t, ray: Ray.t, data: Ray.intersection_data_t, max_dist: float) => {
     /* Check for ray intersection against x and y slabs. */
     let tx_min = (get_bound(a,  data.dir_is_neg[0]).x -. ray.origin.x) *. data.inv_dir.x;

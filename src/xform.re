@@ -1,13 +1,19 @@
+/**
+ * Represents a geometric transformation in 3-d space, backed by a matrix and a cache of its
+ * inverse.
+ */
 type t = {
     mat: Mat.t,
     inv_mat: Mat.t
 };
 
+/** The identity transformation, which performs no actual transformation. */
 let identity = {
     mat: Mat.identity,
     inv_mat: Mat.identity
 };
 
+/** Creates an Xform from a backing matrix. */
 let create = (mat: Mat.t) => {
     mat: mat,
     inv_mat: Mat.invert(mat)
@@ -57,19 +63,35 @@ let _transform_bbox = (mat: Mat.t, b: Bbox.t) => {
     ])
 };
 
+/** Transforms the given vector as a point. */
 let transform_vec = (xform: t, v: Vec.t) => _transform(xform.mat, v);
+/** Untransforms the given vector as a point. */
 let untransform_vec = (xform: t, v: Vec.t) => _transform(xform.inv_mat, v);
 
+/** Transforms the given vector as a direction. */
 let transform_dir = (xform: t, v: Vec.t) => _transform_dir(xform.mat, v);
+/** Untransforms the given vector as a direction. */
 let untransform_dir = (xform: t, v: Vec.t) => _transform_dir(xform.inv_mat, v);
 
-/* This is right. _transform_normal takes the inverse mat because normals are transformed
-    by the transposed inverted matrix. */
+/**
+ * Transforms the given vector as a surface normal.
+ * Note that normals are transformed by the transposed inverted matrix instead of the
+ * regular matrix.
+ */
 let transform_normal = (xform: t, v: Vec.t) => _transform_normal(xform.inv_mat, v);
+/** Untransforms the given vector as a surface normal. */
 let untransform_normal = (xform: t, v: Vec.t) => _transform_normal(xform.mat, v);
 
+/** Transforms the given ray. */
 let transform_ray = (xform: t, r: Ray.t) => _transform_ray(xform.mat, r);
+/** Untransforms the given ray. */
 let untransform_ray = (xform: t, r: Ray.t) => _transform_ray(xform.inv_mat, r);
 
+/** Transforms the given bounding box. */
 let transform_bbox = (xform: t, b: Bbox.t) => _transform_bbox(xform.mat, b);
+/**
+ * Untransforms the given bounding box.
+ * Note that this is not the exact inverse of transform_bbox;
+ * `untransform_bbox(transform_bbox(...))` may cause the bounding box to grow.
+ */
 let untransform_bbox = (xform: t, b: Bbox.t) => _transform_bbox(xform.inv_mat, b);
