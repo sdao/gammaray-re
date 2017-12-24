@@ -1,1 +1,1 @@
-Sampling.Tests.test_cumulative();
+Sampling.Tests.test_gaussian();

@@ -1,10 +1,13 @@
 {
   "name": "gammaray-re",
   "scripts": {
-    "build": "bsb",
-    "start": "./lib/bs/bytecode/index.byte"
+    "buildbyte": "./node_modules/.bin/bsb -backend bytecode",
+    "build": "./node_modules/.bin/bsb -backend native",
+    "startbyte": ".\\node_modules\\bs-platform\\vendor\\ocaml\\bin\\ocamlrun.exe ./lib/bs/bytecode/index.byte",
+    "start": ".\\lib\\bs\\native\\index.native"
   },
-  "devDependencies": {
-    "bs-platform": "bsansouci/bsb-native"
+  "devDependencies": {},
+  "dependencies": {
+    "bs-platform": "github:bsansouci/bsb-native#fast"
   }
 }
