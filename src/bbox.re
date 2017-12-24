@@ -14,14 +14,14 @@ let is_empty = (a: t) => {
     a.min.x >= a.max.x || a.min.y >= a.max.y || a.min.z >= a.max.z
 };
 
-let union_with = (a: t, v: Vec.t) => {
+let union = (a: t, v: Vec.t) => {
     {
         min: Vec.xyz(min(a.min.x, v.x), min(a.min.y, v.y), min(a.min.z, v.z)),
         max: Vec.xyz(max(a.max.x, v.x), max(a.max.y, v.y), max(a.max.z, v.z))
     }
 };
 
-let combine_with = (a: t, b: t) => {
+let combine = (a: t, b: t) => {
     {
         min: Vec.xyz(min(a.min.x, b.min.x), min(a.min.y, b.min.y), min(a.min.z, b.min.z)),
         max: Vec.xyz(max(a.max.x, b.max.x), max(a.max.y, b.max.y), max(a.max.z, b.max.z))
