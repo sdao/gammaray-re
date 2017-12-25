@@ -155,16 +155,17 @@ let _write_channels = (buffer: Buffer.t, film: Film.t) => {
         _write_little_endian_32(buffer, Int32.of_int(y)); /* Scan line number */
         _write_little_endian_32(buffer, Int32.of_int(line_size - 8)); /* Bytes in line */
 
+        let first_index = Math.index(film.height - y - 1, 0, film.width);
         for (x in 0 to (film.width - 1)) {
-            let pixel = film.pixels[film.height - y - 1][x];
+            let pixel = film.pixels[first_index + x];
             _write_little_endian_f(buffer, pixel.accum.z /. pixel.weight);
         };
         for (x in 0 to (film.width - 1)) {
-            let pixel = film.pixels[film.height - y - 1][x];
+            let pixel = film.pixels[first_index + x];
             _write_little_endian_f(buffer, pixel.accum.y /. pixel.weight);
         };
         for (x in 0 to (film.width - 1)) {
-            let pixel = film.pixels[film.height - y - 1][x];
+            let pixel = film.pixels[first_index + x];
             _write_little_endian_f(buffer, pixel.accum.x /. pixel.weight);
         };
     };

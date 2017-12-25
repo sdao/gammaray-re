@@ -29,21 +29,14 @@ let create_sample = () => {color: Vec.zero, s: 0.0, t: 0.0};
 type t = {
     width: int,
     height: int,
-    pixels: array(array(pixel_t)),
+    pixels: array(pixel_t), /* Row-major; use Math.index. */
 };
 
 let _filter_width: float = 2.0;
 
 /** Creates an empty film with given width and height. */
 let create = (width: int, height: int) => {
-    let tmp = create_pixel();
-    let pixels = Array.make_matrix(height, width, tmp);
-    for (i in 0 to height - 1) {
-        for (j in 0 to width - 1) {
-            pixels[i][j] = create_pixel();
-        };
-    };
-
+    let pixels = Array.init(width * height, (_) => create_pixel());
     {width: width, height: height, pixels: pixels}
 };
 
@@ -54,8 +47,10 @@ let create_test = (width: int, height: int) => {
         let g = float_of_int(y) /. float_of_int(height - 1);
         for (x in 0 to (width - 1)) {
             let b = float_of_int(x) /. float_of_int(width - 1);
-            film.pixels[y][x].accum = Vec.xyz(0.5, g, b);
-            film.pixels[y][x].weight = 1.0;
+
+            let pixel = film.pixels[Math.index(y, x, width)];
+            pixel.accum = Vec.xyz(0.5, g, b);
+            pixel.weight = 1.0;
         };
     };
     film
@@ -113,14 +108,14 @@ let report_samples = (film: t, samples: ref(array(sample_t))) => {
 
         for (y in min_row to max_row) {
             for (x in min_col to max_col) {
-                let pixel = film.pixels[y][x];
                 let weight = Math.mitchell_filter2(
                         float_of_int(x) -. col_discr,
                         float_of_int(y) -. row_discr,
                         _filter_width);
 
-                film.pixels[y][x].accum = pixel.accum +^ (sample.color *^ Vec.from_scalar(weight));
-                film.pixels[y][x].weight = pixel.weight +. weight;
+                let pixel = film.pixels[Math.index(y, x, film.width)];
+                pixel.accum = pixel.accum +^ (sample.color *^ Vec.from_scalar(weight));
+                pixel.weight = pixel.weight +. weight;
             };
         };
     }, samples^);

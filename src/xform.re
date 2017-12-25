@@ -20,30 +20,30 @@ let create = (mat: Mat.t) => {
 };
 
 let _transform = (mat: Mat.t, v: Vec.t) => {
-    let x = (v.x *. mat.storage[0][0]) +. (v.y *. mat.storage[1][0]) +. (v.z *. mat.storage[2][0])
-            +. mat.storage[3][0];
-    let y = (v.x *. mat.storage[0][1]) +. (v.y *. mat.storage[1][1]) +. (v.z *. mat.storage[2][1])
-            +. mat.storage[3][1];
-    let z = (v.x *. mat.storage[0][2]) +. (v.y *. mat.storage[1][2]) +. (v.z *. mat.storage[2][2])
-            +. mat.storage[3][2];
-    let w = (v.x *. mat.storage[0][3]) +. (v.y *. mat.storage[1][3]) +. (v.z *. mat.storage[2][3])
-            +. mat.storage[3][3];
+    let x = (v.x *. mat.storage[0]) +. (v.y *. mat.storage[4]) +. (v.z *. mat.storage[8])
+            +. mat.storage[12];
+    let y = (v.x *. mat.storage[1]) +. (v.y *. mat.storage[5]) +. (v.z *. mat.storage[9])
+            +. mat.storage[13];
+    let z = (v.x *. mat.storage[2]) +. (v.y *. mat.storage[6]) +. (v.z *. mat.storage[10])
+            +. mat.storage[14];
+    let w = (v.x *. mat.storage[3]) +. (v.y *. mat.storage[7]) +. (v.z *. mat.storage[11])
+            +. mat.storage[15];
     Vec.xyz(x /. w, y /. w, z /. w)
 };
 
 let _transform_dir = (mat: Mat.t, v: Vec.t) => {
-    Vec.xyz(v.x *. mat.storage[0][0] +. v.y *. mat.storage[1][0] +. v.z *. mat.storage[2][0],
-            v.x *. mat.storage[0][1] +. v.y *. mat.storage[1][1] +. v.z *. mat.storage[2][1],
-            v.x *. mat.storage[0][2] +. v.y *. mat.storage[1][2] +. v.z *. mat.storage[2][2])
+    Vec.xyz(v.x *. mat.storage[0] +. v.y *. mat.storage[4] +. v.z *. mat.storage[8],
+            v.x *. mat.storage[1] +. v.y *. mat.storage[5] +. v.z *. mat.storage[9],
+            v.x *. mat.storage[2] +. v.y *. mat.storage[6] +. v.z *. mat.storage[10])
 };
 
 let _transform_normal = (inv_mat: Mat.t, v: Vec.t) => {
-    Vec.xyz((v.x *. inv_mat.storage[0][0]) +. (v.y *. inv_mat.storage[0][1])
-                +. (v.z *. inv_mat.storage[0][2]),
-            (v.x *. inv_mat.storage[1][0]) +. (v.y *. inv_mat.storage[1][1])
-                +. (v.z *. inv_mat.storage[1][2]),
-            (v.x *. inv_mat.storage[2][0]) +. (v.y *. inv_mat.storage[2][1])
-                +. (v.z *. inv_mat.storage[2][2]))
+    Vec.xyz((v.x *. inv_mat.storage[0]) +. (v.y *. inv_mat.storage[1])
+                +. (v.z *. inv_mat.storage[2]),
+            (v.x *. inv_mat.storage[4]) +. (v.y *. inv_mat.storage[5])
+                +. (v.z *. inv_mat.storage[6]),
+            (v.x *. inv_mat.storage[8]) +. (v.y *. inv_mat.storage[9])
+                +. (v.z *. inv_mat.storage[10]))
 };
 
 let _transform_ray = (mat: Mat.t, r: Ray.t) => {

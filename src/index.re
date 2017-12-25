@@ -21,7 +21,10 @@ Printf.printf("Aspect ratio: %f, Width: %d, Height: %d\n",
         Camera.aspect_ratio(Camera.default), width, height);
 
 let stage = Stage.create(prims, Camera.default, Integrator.display_color, width, height);
+let t0 = Sys.time();
 Stage.trace(stage);
+let t1 = Sys.time();
+Printf.printf("Frame time: %f s\n", t1 -. t0);
 
 let exr = Exr.create(width, height);
 Exr.update(exr, stage.film);
