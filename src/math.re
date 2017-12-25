@@ -10,6 +10,11 @@ let is_nearly_zero = (x: float) => {
     abs_float(x) < epsilon_float
 };
 
+/** Whether a number is positive, within a small epsilon. */
+let is_positive = (x: float) => {
+    x > epsilon_float
+};
+
 /** Clamps a value between the lower limit a and the upper limit b. */
 let clamp = (x, a, b) =>
     if (x < a) {

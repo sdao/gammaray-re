@@ -16,7 +16,7 @@
  */
 
 /** Note: this isn't thread-safe, including the next_* functions, which modify this. */
-type rng = {
+type rng_t = {
     mutable x: int32,
     mutable y: int32,
     mutable z: int32,
@@ -42,7 +42,7 @@ let create_rng = () => {
  * Returns the next random int32 (with all 32 bits randomized).
  * This implementation is borrowed from Rust's rand library's XorShiftRng. See module doc.
  */
-let next_int32 = (r: rng) => {
+let next_int32 = (r: rng_t) => {
     /* See https://en.wikipedia.org/wiki/Xorshift */
     let x = r.x;
     let t = Int32.logxor(x, Int32.shift_left(x, 11));
@@ -60,7 +60,7 @@ let next_int32 = (r: rng) => {
  * Returns the next random float selected from the half-open interval [0, 1).
  * This implementation is borrowed from Rust's rand library's Rng. See module doc.
  */
-let next_float = (r: rng) => {
+let next_float = (r: rng_t) => {
     let i = next_int32(r);
     let upper_mask = 0x3F800000l;
     let lower_mask = 0x7FFFFFl;
@@ -70,7 +70,7 @@ let next_float = (r: rng) => {
 };
 
 /** Returns the next random float in the half-open interval [a, b). */
-let next_float_range = (r: rng, a: float, b: float) => {
+let next_float_range = (r: rng_t, a: float, b: float) => {
     a +. next_float(r) *. (b -. a)
 };
 
@@ -116,14 +116,14 @@ module GaussianDistribution = {
     };
 
     /** Samples a number from the standard normal distribution. */
-    let sample = (r: rng) => {
+    let sample = (r: rng_t) => {
         let hz = next_int32(r);
         let iz = Int32.to_int(hz) land 127;
         if (Int32.abs(hz) < _kn[iz]) {
             Int32.to_float(hz) *. _wn[iz]
         }
         else {
-            let rec nfix_zero = (r: rng, hz: int32) => {
+            let rec nfix_zero = (r: rng_t, hz: int32) => {
                 let x = ~-.log(next_float(r)) /. _d;
                 let y = ~-.log(next_float(r));
                 if ((y +. y) >= (x +. x)) {
@@ -138,7 +138,7 @@ module GaussianDistribution = {
                     nfix_zero(r, hz)
                 }
             };
-            let rec nfix = (r: rng, hz: int32, iz: int) => {
+            let rec nfix = (r: rng_t, hz: int32, iz: int) => {
                 let x = Int32.to_float(hz) *. _wn[iz];
                 if (iz == 0) {
                     nfix_zero(r, hz)
@@ -172,7 +172,7 @@ module AreaSampleDisk = {
      *
      * Taken from Pharr & Humphreys' p. 667.
      */
-    let sample = (r: rng) => {
+    let sample = (r: rng_t) => {
         let sx = next_float_range(r, -1.0, 1.0);
         let sy = next_float_range(r, -1.0, 1.0);
 
@@ -207,7 +207,7 @@ module CosineSampleHemisphere = {
      *                Z-axis instead; false will sample from the positive
      *                hemisphere and true will sample from the negative hemisphere
      */
-    let sample = (r: rng, flipped: bool) => {
+    let sample = (r: rng_t, flipped: bool) => {
         let (x, y) = AreaSampleDisk.sample(r);
         let z = sqrt(max(0.0, ~-.1.0 -. (x *. x) -. (y *. y)));
 
@@ -231,7 +231,7 @@ module CosineSampleHemisphere = {
 
 /* Uniform distribution over unit sphere surface area. */
 module UniformSampleSphere = {
-    let sample = (r: rng) => {
+    let sample = (r: rng_t) => {
         /* See MathWorld <http://mathworld.wolfram.com/SpherePointPicking.html>. */
         let x = GaussianDistribution.sample(r);
         let y = GaussianDistribution.sample(r);
@@ -271,7 +271,7 @@ module UniformSampleCone = {
      * @param half_angle the half-angle of the cone's opening; must be between 0
      *                   and Pi/2 and in radians
      */
-    let sample = (r: rng, half_angle: float) => {
+    let sample = (r: rng_t, half_angle: float) => {
         let h = cos(half_angle);
         let z = next_float_range(r, h, 1.0);
         let t = next_float_range(r, 0.0, Math.pi *. 2.0);
@@ -307,7 +307,7 @@ module UniformSampleCone = {
 
 /** Uniformly samples barycentric coordinates for a triangle. */
 module UniformSampleBarycentric = {
-    let sample = (r: rng) => {
+    let sample = (r: rng_t) => {
         let (a, b) = (next_float(r), next_float(r));
         let sqrt_a = sqrt(a);
         (1.0 -. sqrt_a, b *. sqrt_a)
@@ -349,7 +349,7 @@ module CumulativeDistribution = {
      * |      4 | 1.0 |
      * The pdf of choosing bucket 3 is CDF(3) - CDF(2) = 0.1.
      */
-    let sample = (r: rng, cdf: array(float)) => {
+    let sample = (r: rng_t, cdf: array(float)) => {
         _binary_search(cdf, next_float(r), 0, Array.length(cdf) - 1)
     };
 
@@ -369,13 +369,13 @@ module CumulativeDistribution = {
 
 module Tests = {
     let test_gaussian = () => {
-        let rng = create_rng();
+        let r = create_rng();
         let rec gen_gaussian = (l: list(float), i: int) => {
             if (i < 0) {
                 l
             }
             else {
-                gen_gaussian([GaussianDistribution.sample(rng), ...l], i - 1)
+                gen_gaussian([GaussianDistribution.sample(r), ...l], i - 1)
             }
         };
 

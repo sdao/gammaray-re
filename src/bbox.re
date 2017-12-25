@@ -12,6 +12,9 @@ let empty = {
     max: Vec.from_scalar(min_float),
 };
 
+/** Creates a bounding box with given min and max points. */
+let from_min_max = (min: Vec.t, max: Vec.t) => {min: min, max: max};
+
 /** Whether the bounding box contains no points. */
 let is_empty = (a: t) => {
     a.min.x >= a.max.x || a.min.y >= a.max.y || a.min.z >= a.max.z
