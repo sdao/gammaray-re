@@ -26,18 +26,6 @@ type rng_t = {
 /** The number of steradians in a sphere (4 * Pi). */
 let _steradians_per_sphere = Math.pi *. 4.0;
 
-/** Creates a new XorShift rng seeded from the global rng. */
-let create_rng = () => {
-    Random.self_init();
-    let rand_int32 = () => {
-        /* Random.bits gives 30 bits, so take 30 from a and 2 from b for an int32. */
-        let a = Int32.of_int(Random.bits());
-        let b = Int32.of_int(Random.bits());
-        Int32.logor(a, Int32.shift_left(b, 30))
-    };
-    {x: rand_int32(), y: rand_int32(), z: rand_int32(), w: rand_int32()}
-};
-
 /**
  * Returns the next random int32 (with all 32 bits randomized).
  * This implementation is borrowed from Rust's rand library's XorShiftRng. See module doc.
@@ -72,6 +60,27 @@ let next_float = (r: rng_t) => {
 /** Returns the next random float in the half-open interval [a, b). */
 let next_float_range = (r: rng_t, a: float, b: float) => {
     a +. next_float(r) *. (b -. a)
+};
+
+/**
+ * Creates a new XorShift rng seeded from the global rng.
+ * Warning: this function is very slow to run because it uses the global Ocalm rng, not XorShift.
+ * Don't call it repeatedly in an inner loop.
+ */
+let create_rng = () => {
+    Random.self_init();
+    let rand_int32 = () => {
+        /* Random.bits gives 30 bits, so take 30 from a and 2 from b for an int32. */
+        let a = Int32.of_int(Random.bits());
+        let b = Int32.of_int(Random.bits());
+        Int32.logor(a, Int32.shift_left(b, 30))
+    };
+    {x: rand_int32(), y: rand_int32(), z: rand_int32(), w: rand_int32()}
+};
+
+/** Creates a new XorShiftRng seeded with randomness from an existing XorShiftRng. */
+let create_seeded_rng = (r: rng_t) => {
+    {x: next_int32(r), y: next_int32(r), z: next_int32(r), w: next_int32(r)}
 };
 
 /**

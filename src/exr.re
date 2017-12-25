@@ -131,7 +131,6 @@ let _write_screen_window_width = (buffer: Buffer.t, width: int) => {
 let _write_line_offset_table = (buffer: Buffer.t, width: int, height: int) => {
     let table_size = 8 * height; /* 1 ulong (8 bytes) per line */
     let data_offset = Buffer.length(buffer) + table_size;
-    print_endline(Printf.sprintf("data_offset=%d", data_offset));
 
     /* Scan line number (int); bytes in line (uint); RGB (3 floats * 4 bytes) per pixel. */
     let line_size = 4 + 4 + (width * 4 * 3);
