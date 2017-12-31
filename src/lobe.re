@@ -216,3 +216,140 @@ let create_disney_clearcoat_refl = (clearcoat: float, clearcoat_gloss: float) =>
             Optics.create_schlick_fresnel(Vec.from_scalar(0.04)),
             Vec.from_scalar(0.25 *. clearcoat))
 };
+
+/* This implementation is derived from the MicrofacetTransmission in PBRT 3e. */
+let create_disney_specular_trans_aniso =
+    (color: Vec.t, roughness: float, anisotropic: float, ior: float) =>
+{
+    let ior_adjusted = max(ior, 1.01);
+    let disney_specular_trans: t = {
+        pri microfacet = Optics.create_ggx(roughness, anisotropic);
+        pri fresnel = Optics.create_dielectric_fresnel(ior_adjusted);
+        pri ior = ior_adjusted;
+        pri spec_color = color;
+
+        pub kind = Kind.glossy lor Kind.transmission;
+
+        pub f = (i: Vec.t, o: Vec.t, camera_to_light: bool) => {
+            /* This is defined for transmission only. */
+            if (Vec.is_local_same_hemisphere(i, o)) {
+                Vec.zero
+            }
+            else {
+                let cos_theta_in = Vec.cos_theta(i);
+                let cos_theta_out = Vec.cos_theta(o);
+                if (cos_theta_in == 0.0 || cos_theta_out == 0.0) {
+                    Vec.zero
+                }
+                else {
+                    let eta = if (cos_theta_in > 0.0) {
+                        /* Entering */
+                        this#ior
+                    }
+                    else {
+                        /* Exiting */
+                        1.0 /. this#ior
+                    };
+
+                    let half_unnorm = i +^ (o *^. eta);
+                    let half = if (half_unnorm.z > 0.0) {
+                        Vec.normalized(half_unnorm)
+                    }
+                    else {
+                        ~-^Vec.normalized(half_unnorm)
+                    };
+
+                    assert(Vec.is_finite(i));
+                    assert(Vec.is_finite(o));
+                    assert(Vec.is_finite(half));
+
+                    let fresnel = this#fresnel(Vec.dot(o, half));
+                    let d = this#microfacet#d(half);
+                    let g = this#microfacet#g(i, o);
+
+                    let sqrt_denom = Vec.dot(i, half) +. eta *. Vec.dot(o, half);
+                    let factor = if (camera_to_light) { 1.0 } else { eta };
+                    let fresnel_inverse = Vec.one -^ fresnel; /* Amount transmitted! */
+
+                    (this#spec_color *^ fresnel_inverse) *^.
+                            abs_float(
+                                d *. g *. factor *. factor *. abs_float(Vec.dot(o, half)) *.
+                                abs_float(Vec.dot(i, half)) /.
+                                (cos_theta_out *. cos_theta_in *. sqrt_denom *. sqrt_denom))
+                }
+            }
+        };
+        pub pdf = (i: Vec.t, o: Vec.t) => {
+            if (Vec.is_local_same_hemisphere(i, o)) {
+                0.0
+            }
+            else {
+                let eta = if (Vec.cos_theta(i) > 0.0) {
+                    /* Entering. */
+                    this#ior
+                }
+                else {
+                    /* Exiting. */
+                    1.0 /. this#ior
+                };
+
+                /* Compute half from i and o for microfacet transmission. */
+                let half_unnorm = i +^ (o *^. eta);
+                let half = if (half_unnorm.z > 0.0) {
+                    half_unnorm
+                }
+                else {
+                    ~-^Vec.normalized(half_unnorm)
+                };
+
+                /* Compute change of variables for microfacet transmission. */
+                let sqrt_denom = Vec.dot(i, half) +. eta *. Vec.dot(o, half);
+                let dwh_dwi = abs_float((eta *. eta *. Vec.dot(o, half)) /.
+                        (sqrt_denom *. sqrt_denom));
+                this#microfacet#pdf(i, half) *. dwh_dwi
+            }
+        };
+        pub sample_f = (i: Vec.t, camera_to_light: bool, rng: Sampling.rng_t) => {
+            /* Sample microfacet orientation (half) and reflected direction (o). */
+            if (i.z == 0.0) {
+                zero_sample
+            }
+            else {
+                let half = this#microfacet#sample_half(i, rng);
+                let eta = if (Vec.cos_theta(i) > 0.0) {
+                    /* Entering. */
+                    1.0 /. this#ior
+                }
+                else {
+                    /* Exiting. */
+                    this#ior
+                };
+
+                let o = Vec.refract(i, half, eta);
+                assert(Vec.is_finite(o));
+
+                if (Vec.is_exactly_zero(o)) {
+                    zero_sample
+                }
+                else {
+                    /* Compute PDF of outoing vector for microfacet transmission. */
+                    let result = this#f(i, o, camera_to_light);
+                    let pdf = this#pdf(i, o);
+                    assert(Vec.is_finite(result));
+
+                    {
+                        result: result,
+                        outgoing: o,
+                        pdf: pdf
+                    }
+                }
+            }
+        };
+    };
+
+    disney_specular_trans
+};
+
+let create_disney_specular_trans = (color: Vec.t, roughness: float, ior: float) => {
+    create_disney_specular_trans_aniso(color, roughness, 0.0, ior)
+};
