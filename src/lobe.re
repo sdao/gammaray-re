@@ -83,12 +83,12 @@ let cosine_sample_f = (lobe: t, i: Vec.t, camera_to_light: bool, rng: Sampling.r
 
 /** Implements diffuse, retro-reflection, and sheen for the Disney BRDF. */
 let create_disney_diffuse_refl =
-    (color: Vec.t, roughness: float, sheen: float, sheen_tint: float, diffuse_weight: float) =>
+    (color: Vec.t, roughness: float, sheen_frac: float, sheen_tint: float, diffuse_weight: float) =>
 {
-    let disney_diffuse_refl = {
+    let disney_diffuse_refl: t = {
         pri diffuse_color = color *^. diffuse_weight;
         pri sheen_color = Vec.lerp(Vec.one, Vec.tint(color), sheen_tint) *^.
-                (sheen *. diffuse_weight);
+                (sheen_frac *. diffuse_weight);
         pri roughness = roughness;
 
         pub kind = Kind.diffuse lor Kind.reflection;
@@ -125,4 +125,94 @@ let create_disney_diffuse_refl =
     };
 
     disney_diffuse_refl
+};
+
+let create_standard_microfacet_refl =
+    (dist: Optics.microfacet_distribution_t, fr: Optics.fresnel_t, color: Vec.t) =>
+{
+    let standard_microfacet_refl: t = {
+        pri microfacet = dist;
+        pri fresnel = fr;
+        pri color = color;
+
+        pub kind = Kind.glossy lor Kind.reflection;
+
+        pub f = (i: Vec.t, o: Vec.t, _: bool) => {
+            let cos_theta_in = Vec.abs_cos_theta(i);
+            let cos_theta_out = Vec.abs_cos_theta(o);
+            let half_unnorm = i +^ o;
+            if (Vec.is_exactly_zero(half_unnorm) || cos_theta_in == 0.0 || cos_theta_out == 0.0) {
+                Vec.zero
+            }
+            else {
+                let half = Vec.normalized(half_unnorm);
+                let fresnel = this#fresnel(Vec.dot(o, half));
+                let d = this#microfacet#d(half);
+                let g = this#microfacet#g(i, o);
+                (this#color *^ fresnel) *^. (d *. g /. (1.0 *. cos_theta_out *. cos_theta_in))
+            }
+        };
+        pub pdf = (i: Vec.t, o: Vec.t) => {
+            if (Vec.is_local_same_hemisphere(i, o)) {
+                let half = Vec.normalized(i +^ o);
+                this#microfacet#pdf(i, half) /. (4.0 *. Vec.dot(i, half))
+            }
+            else {
+                0.0
+            }
+        };
+        pub sample_f = (i: Vec.t, camera_to_light: bool, rng: Sampling.rng_t) => {
+            /* Sample microfacet orientation (half) and reflected direction (o). */
+            if (i.z == 0.0) {
+                zero_sample
+            }
+            else {
+                let half = this#microfacet#sample_half(i, rng);
+                let o = Vec.reflect(i, half);
+                if (!Vec.is_local_same_hemisphere(i, o)) {
+                    zero_sample
+                }
+                else {
+                    /* Compute PDF of outoing vector for microfacet reflection. */
+                    let result = this#f(i, o, camera_to_light);
+                    let pdf = this#microfacet#pdf(i, half) /. (4.0 *. Vec.dot(i, half));
+                    {
+                        result: result,
+                        outgoing: o,
+                        pdf: pdf
+                    }
+                }
+            }
+        };
+    };
+
+    standard_microfacet_refl
+};
+
+let create_disney_specular_refl_aniso =
+    (color: Vec.t, roughness: float, anisotropic: float, ior: float, specular_tint: float,
+    metallic: float) =>
+{
+    /* Note: the color will be computed by the Disney fresnel function, so we just set it to
+     * white on the lobe itself. */
+    let ior_adjusted = max(ior, 1.01);
+    create_standard_microfacet_refl(
+            Optics.create_ggx(roughness, anisotropic),
+            Optics.create_disney_fresnel(ior_adjusted, color, specular_tint, metallic),
+            color)
+};
+
+let create_disney_specular_refl =
+    (color: Vec.t, roughness: float, ior: float, specular_tint: float, metallic: float) =>
+{
+    create_disney_specular_refl_aniso(color, roughness, ior, specular_tint, metallic)
+};
+
+let create_disney_clearcoat_refl = (clearcoat: float, clearcoat_gloss: float) => {
+    /* Note: Disney BRDF: (ior = 1.0 -> F0 = 0.04).
+     * Disney also scales the clearcoat amount by 0.25. */
+    create_standard_microfacet_refl(
+            Optics.create_gtr1(clearcoat_gloss),
+            Optics.create_schlick_fresnel(Vec.from_scalar(0.04)),
+            Vec.from_scalar(0.25 *. clearcoat))
 };
