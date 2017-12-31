@@ -27,6 +27,9 @@ let clamp = (x, a, b) =>
         x
     };
 
+/** Clamps between 0.0 and 1.0. */
+let clamp_unit = (x) => clamp(x, 0.0, 1.0);
+
 /**
  * Linearly interpolates between two floats given a scale k; when k is 0.0, the value is a,
  * when k is 1.0, the value is b; otherwise the value is interpolated between a and b, with
