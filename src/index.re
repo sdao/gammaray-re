@@ -21,14 +21,23 @@ Printf.printf("Aspect ratio: %f, Width: %d, Height: %d\n",
         Camera.aspect_ratio(Camera.default), width, height);
 
 let stage = Stage.create(prims, Camera.default, Integrator.display_color, width, height);
-let t0 = Sys.time();
-Stage.trace(stage);
-let t1 = Sys.time();
-Printf.printf("Frame time: %f s\n", t1 -. t0);
-
 let exr = Exr.create(width, height);
-Exr.update(exr, stage.film);
-
 let oc = open_out_bin("output.exr");
-Exr.output_exr(oc, exr);
-flush(oc);
+
+Printf.printf("Press ^C to stop\n");
+
+let i = ref(0);
+while (true) {
+    let t0 = Sys.time();
+    Stage.trace(stage);
+    let t1 = Sys.time();
+    Printf.printf("Frame %d (%f s)\n", i^, t1 -. t0);
+    ignore(Exr.update(exr, stage.film));
+
+    seek_out(oc, 0);
+    ignore(Exr.output_exr(oc, exr));
+    flush(oc);
+
+    i := i^ + 1;
+    flush(stdout);
+};
