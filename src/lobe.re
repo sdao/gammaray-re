@@ -86,9 +86,9 @@ let create_disney_diffuse_refl =
     (color: Vec.t, roughness: float, sheen: float, sheen_tint: float, diffuse_weight: float) =>
 {
     let disney_diffuse_refl = {
-        pri diffuse_color = color *^ Vec.from_scalar(diffuse_weight);
-        pri sheen_color = Vec.lerp(Vec.one, Vec.tint(color), sheen_tint) *^
-                Vec.from_scalar(sheen *. diffuse_weight);
+        pri diffuse_color = color *^. diffuse_weight;
+        pri sheen_color = Vec.lerp(Vec.one, Vec.tint(color), sheen_tint) *^.
+                (sheen *. diffuse_weight);
         pri roughness = roughness;
 
         pub kind = Kind.diffuse lor Kind.reflection;
@@ -96,8 +96,8 @@ let create_disney_diffuse_refl =
         pub f = (i: Vec.t, o: Vec.t, _: bool) => {
             let f_in = Optics.fresnel_schlick_weight(Vec.abs_cos_theta(i));
             let f_out = Optics.fresnel_schlick_weight(Vec.abs_cos_theta(o));
-            let diffuse = this#diffuse_color *^ Vec.from_scalar(
-                    (1.0 /. Math.pi) *. (1.0 -. 0.5 *. f_in) *. (1.0 -. 0.5 *. f_out));
+            let diffuse = this#diffuse_color *^.
+                    ((1.0 /. Math.pi) *. (1.0 -. 0.5 *. f_in) *. (1.0 -. 0.5 *. f_out));
 
             let half_unnorm = i +^ o;
             if (Vec.is_exactly_zero(half_unnorm)) {
@@ -109,10 +109,11 @@ let create_disney_diffuse_refl =
                 let cos_theta_d = Vec.dot(o, half); /** Note: could have used i here also. */
                 let r_r = 2.0 *. this#roughness *. cos_theta_d *. cos_theta_d;
 
-                let retro = this#diffuse_color *^ Vec.from_scalar(
-                        (1.0 /. Math.pi) *. r_r *. (f_out +. f_in +. f_out *. f_in *. (r_r -. 1.0)));
-                let sheen = this#sheen_color *^
-                        Vec.from_scalar(Optics.fresnel_schlick_weight(cos_theta_d));
+                let retro = this#diffuse_color *^.
+                        ((1.0 /. Math.pi) *.
+                            r_r *.
+                            (f_out +. f_in +. f_out *. f_in *. (r_r -. 1.0)));
+                let sheen = this#sheen_color *^. Optics.fresnel_schlick_weight(cos_theta_d);
                 
                 diffuse +^ retro +^ sheen
             }

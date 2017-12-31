@@ -32,7 +32,7 @@ module Ops = {
     /** Inverts the direction of the rotation specified by the quaternion. */
     let (~-%) = (a: t) => {
         let lsq = (a.real *. a.real) +. Vec.dot(a.im, a.im);
-        {real: a.real /. lsq, im: (~-^a.im) /^ Vec.from_scalar(lsq)}
+        {real: a.real /. lsq, im: (~-^a.im) /^. lsq}
     };
 };
 
@@ -43,4 +43,4 @@ let identity = {real: 1.0, im: Vec.zero};
 let create = (real: float, im: Vec.t) => {real: real, im: im};
 
 /** Scales the rotation of the quaternion by the given amount. */
-let scale = (a: t, k: float) => {real: a.real *. k, im: a.im *^ Vec.from_scalar(k)};
+let scale = (a: t, k: float) => {real: a.real *. k, im: a.im *^. k};

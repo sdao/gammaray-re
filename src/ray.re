@@ -27,7 +27,7 @@ let zero = {origin: Vec.zero, dir: Vec.zero};
 let create = (origin: Vec.t, direction: Vec.t) => {origin: origin, dir: direction};
 
 /** Returns the parametric position along the ray at the given parameter. */
-let at = (a: t, k: float) => a.origin +^ (a.dir *^ Vec.from_scalar(k));
+let at = (a: t, k: float) => a.origin +^ (a.dir *^. k);
 
 /** Pre-computes some data used to accelerate intersection computations. */
 let compute_intersection_data = (a: t) => {

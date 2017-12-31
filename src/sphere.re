@@ -81,7 +81,7 @@ let create = (material: Material.t, xf: Mat.t, radius: float) => {
 
         pub sample_world = (rng: Sampling.rng_t) => {
             let pt = this#origin +^
-                    (Sampling.UniformSampleSphere.sample(rng) *^ Vec.from_scalar(this#radius));
+                    (Sampling.UniformSampleSphere.sample(rng) *^. this#radius);
             let surface_props = this#compute_surface_props(pt);
             let pdf = 1.0 /. (4.0 *. Math.pi *. this#radius *. this#radius);
             (pt, surface_props, pdf)

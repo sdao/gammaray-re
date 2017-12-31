@@ -27,9 +27,19 @@ module Ops = {
         {x: a.x *. b.x, y: a.y *. b.y, z: a.z *. b.z}
     };
 
+    /** Component-wise multiplication of vector by scalar. */
+    let (*^.) = (a: t, k: float) => {
+        {x: a.x *. k, y: a.y *. k, z: a.z *. k}
+    };
+
     /** Component-wise division. */
     let (/^) = (a: t, b: t) => {
         {x: a.x /. b.x, y: a.y /. b.y, z: a.z /. b.z}
+    };
+
+    /** Component-wise division of vector by scalar. */
+    let (/^.) = (a: t, k: float) => {
+        {x: a.x /. k, y: a.y /. k, z: a.z /. k}
     };
 
     /** Unary negation of all components. */
@@ -215,7 +225,7 @@ let luminance = (v: t) => {
 let tint = (v: t) => {
     let lume = luminance(v);
     if (lume > 0.0) {
-        v /^ from_scalar(lume)
+        v /^. lume
     }
     else {
         one
@@ -248,8 +258,8 @@ let refract = (v: t, n: t, eta: float) => {
     }
     else {
         let cos_theta_trans = sqrt(1.0 -. sin2_theta_trans);
-        (from_scalar(~-.eta) *^ v) +^
-                (from_scalar((eta *. cos_theta_in) -. cos_theta_trans) *^ n)
+        (v *^. ~-.eta) +^
+                (n *^. ((eta *. cos_theta_in) -. cos_theta_trans))
     }
 };
 

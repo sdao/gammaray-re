@@ -114,7 +114,7 @@ let report_samples = (film: t, samples: ref(array(sample_t))) => {
                         _filter_width);
 
                 let pixel = film.pixels[Math.index(y, x, film.width)];
-                pixel.accum = pixel.accum +^ (sample.color *^ Vec.from_scalar(weight));
+                pixel.accum = pixel.accum +^ (sample.color *^. weight);
                 pixel.weight = pixel.weight +. weight;
             };
         };
