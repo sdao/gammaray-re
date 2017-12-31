@@ -13,7 +13,7 @@ let constant_color: t = {
 let display_color: t = {
     pub integrate = (initial_ray: Ray.t, bvh: Bvh.t, _: Sampling.rng_t) => {
         switch (Bvh.intersect(bvh, initial_ray)) {
-            | Hit(_: float, _: Prim.surface_properties_t, prim_index: int) => {
+            | Hit(_: float, _: SurfaceProperties.t, prim_index: int) => {
                 Bvh.prim(bvh, prim_index)#material.display_color
             }
             | NoHit => {

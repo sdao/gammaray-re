@@ -3,7 +3,7 @@ type t = {
 };
 
 type intersection_t =
-    | Hit(float, Prim.surface_properties_t, int)
+    | Hit(float, SurfaceProperties.t, int)
     | NoHit;
 
 let build = (prims: array(Prim.t)) => {

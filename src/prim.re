@@ -1,22 +1,3 @@
-/** Encapsulates surface properties at the point of an intersection. */
-type surface_properties_t = {
-    normal: Vec.t,
-    tangent: Vec.t,
-    binormal: Vec.t,
-    geom_normal: Vec.t
-};
-
-let empty_surface_props = {
-    normal: Vec.zero,
-    tangent: Vec.zero,
-    binormal: Vec.zero,
-    geom_normal: Vec.zero
-};
-
-let create_surface_props = (n: Vec.t, t: Vec.t, b: Vec.t, gn: Vec.t) => {
-    {normal: n, tangent: t, binormal: b, geom_normal: gn}
-};
-
 /** Abstract type for geometry primitives. */
 type t = {
     .
@@ -42,7 +23,7 @@ type t = {
      *
      * `intersect_world ray component` intersects the ray with the given component.
      */
-    intersect_world: (Ray.t, int) => (float, surface_properties_t),
+    intersect_world: (Ray.t, int) => (float, SurfaceProperties.t),
     
     /**
      * Sample a random point in world space on the prim, with respect to the area of the prim.
@@ -50,7 +31,7 @@ type t = {
      *
      * `sample_world rng` uses the given rng to sample a random point on the prim.
      */
-    sample_world: (Sampling.rng_t) => (Vec.t, surface_properties_t, float),
+    sample_world: (Sampling.rng_t) => (Vec.t, SurfaceProperties.t, float),
 };
 
 /**

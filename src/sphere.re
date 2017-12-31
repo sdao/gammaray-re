@@ -15,13 +15,13 @@ let create = (material: Material.t, xf: Mat.t, radius: float) => {
                 /* Singularity at top or bottom. */
                 let tangent = Vec.x_axis;
                 let binormal = Vec.cross(normal, tangent);
-                Prim.create_surface_props(normal, tangent, binormal, normal)
+                SurfaceProperties.create(normal, tangent, binormal, normal)
             }
             else {
                 /* Normal point. */
                 let tangent = Vec.normalized(Vec.xyz(~-.normal.z, 0.0, normal.x));
                 let binormal = Vec.cross(normal, tangent);
-                Prim.create_surface_props(normal, tangent, binormal, normal)
+                SurfaceProperties.create(normal, tangent, binormal, normal)
             }
         };
 
@@ -70,12 +70,12 @@ let create = (material: Material.t, xf: Mat.t, radius: float) => {
                 }
                 else {
                     /* Intersection was behind us. */
-                    (0.0, Prim.empty_surface_props)
+                    (0.0, SurfaceProperties.empty)
                 }
             }
             else {
                 /* No intersection was found. */
-                (0.0, Prim.empty_surface_props)
+                (0.0, SurfaceProperties.empty)
             }
         };
 
