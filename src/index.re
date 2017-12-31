@@ -1,15 +1,25 @@
 let s2 = Sphere.create(
-    Material.create_debug(Vec.xyz(0.1, 0.2, 0.7)),
+    Material.create_diffuse_light(Vec.xyz(2.0, 2.0, 2.0)),
     Mat.translation(Vec.xyz(12.0, 3.0, -90.0)),
     5.0);
 
 let s3 = Sphere.create(
-    Material.create_debug(Vec.xyz(0.3, 0.7, 0.0)),
+    Material.create_disney(
+            ~base_color=Vec.xyz(0.5, 0.9, 0.0),
+            ~roughness=0.5,
+            ~metallic=1.0,
+            ()),
     Mat.translation(Vec.xyz(-25.0, 0.0, -50.0)),
     75.0);
 
 let s4 = Sphere.create(
-    Material.create_debug(Vec.xyz(0.4, 0.1, 0.3)),
+    Material.create_disney(
+            ~base_color=Vec.xyz(1.0, 1.0, 1.0),
+            ~specular_trans=1.0,
+            ~roughness=0.2,
+            ~ior=1.8,
+            ~metallic=0.0,
+            ()),
     Mat.translation(Vec.xyz(6.0, -10.0, -90.0)),
     4.0);
 
