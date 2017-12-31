@@ -30,7 +30,7 @@ let width = int_of_float(float_of_int(height) *. Camera.aspect_ratio(Camera.defa
 Printf.printf("Aspect ratio: %f, Width: %d, Height: %d\n",
         Camera.aspect_ratio(Camera.default), width, height);
 
-let stage = Stage.create(prims, Camera.default, Integrator.display_color, width, height);
+let stage = Stage.create(prims, Camera.default, Integrator.path_tracer, width, height);
 let exr = Exr.create(width, height);
 let oc = open_out_bin("output.exr");
 

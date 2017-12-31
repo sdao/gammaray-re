@@ -44,6 +44,27 @@ let next_int32 = (r: rng_t) => {
     r.w
 };
 
+/** Returns the next random int in [0, b). */
+let rec next_int_range = (r: rng_t, b: int) => {
+    let range_max_exclusive = max_int - (max_int mod b);
+    let range_min_inclusive = min_int - (min_int mod b);
+
+    /* Make random integer. */
+    let rand_int = Int32.to_int(next_int32(r));
+    if (rand_int >= range_min_inclusive && rand_int < 0) {
+        let adjusted = rand_int + 1; /* new range (range_min, 0] */
+        let negative = adjusted mod b;
+        ~-negative
+    }
+    else if (rand_int >= 0 && rand_int < range_max_exclusive) {
+        rand_int mod b
+    }
+    else {
+        /* Need to try again. */
+        next_int_range(r, b)
+    }
+};
+
 /**
  * Returns the next random float selected from the half-open interval [0, 1).
  * This implementation is borrowed from Rust's rand library's Rng. See module doc.
@@ -377,6 +398,27 @@ module CumulativeDistribution = {
 };
 
 module Tests = {
+    let test_int_range = () => {
+        let r = create_rng();
+        let rec gen_ints = (l: list(int), i: int, b: int) => {
+            if (i < 0) {
+                l
+            }
+            else {
+                gen_ints([next_int_range(r, b), ...l], i - 1, b)
+            }
+        };
+
+        let ints23 = gen_ints([], 1_000_000, 23);
+        for (i in 0 to 22) {
+            let count = List.fold_left((a, b) => if (b == i) { a + 1 } else { a }, 0, ints23);
+            Printf.printf("count(%d)=%d\n", i, count);
+            assert(Math.is_close(float_of_int(count) /. 1_000_000.0, 1.0 /. 23.0, 1e-3));
+        };
+        let count23 = List.fold_left((a, b) => if (b == 23) { a + 1 } else { a }, 0, ints23);
+        assert(count23 == 0);
+    };
+
     let test_gaussian = () => {
         let r = create_rng();
         let rec gen_gaussian = (l: list(float), i: int) => {

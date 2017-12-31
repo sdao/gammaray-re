@@ -23,7 +23,7 @@ let trace = (stage: t) => {
     Array.iter((sample: Film.sample_t) => {
         let ray = Camera.compute_ray(stage.camera, sample.s, sample.t);
         let thread_rng = Sampling.create_seeded_rng(rng);
-        sample.color = stage.integrator#integrate(ray, stage.bvh, thread_rng);
+        sample.color = stage.integrator(ray, stage.bvh, thread_rng);
     }, stage.sample_storage^);
     Film.report_samples(stage.film, stage.sample_storage);
 };

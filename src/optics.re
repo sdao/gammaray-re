@@ -46,24 +46,27 @@ let fresnel_dielectric = (cos_theta_in: float, ior: float) => {
 type fresnel_t = float => Vec.t;
 
 let create_schlick_fresnel = (r0: Vec.t) => {
-    (cos_theta: float) => {
+    let fr: fresnel_t = (cos_theta: float) => {
         fresnel_schlick(cos_theta, r0)
-    }
+    };
+    fr
 };
 
 let create_dielectric_fresnel = (ior: float) => {
-    (cos_theta: float) => {
+    let fr: fresnel_t = (cos_theta: float) => {
         Vec.from_scalar(fresnel_dielectric(cos_theta, ior))
-    }
+    };
+    fr
 };
 
 let create_disney_fresnel = (ior: float, color: Vec.t, specular_tint: float, metallic: float) => {
     let spec_color = Vec.lerp(Vec.one, Vec.tint(color), specular_tint);
-    (cos_theta: float) => {
+    let fr: fresnel_t = (cos_theta: float) => {
         let dielectric = spec_color *^. fresnel_dielectric(cos_theta, ior);
         let conductor = fresnel_schlick(cos_theta, color);
         Vec.lerp(dielectric, conductor, metallic)
-    }
+    };
+    fr
 };
 
 type microfacet_distribution_t = {

@@ -37,6 +37,9 @@ let clamp_unit = (x) => clamp(x, 0.0, 1.0);
  */
 let lerp = (a, b, k) => a +. (k *. (b -. a));
 
+/** Like lerp, but clamps between a and b. */
+let clamped_lerp = (a, b, k) => lerp(a, b, clamp(k, a, b));
+
 /** Whether the float is non-infinity and non-NaN. */
 let is_finite = (x: float) => {
     switch (classify_float(x)) {
