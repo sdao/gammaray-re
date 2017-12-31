@@ -239,7 +239,7 @@ module CosineSampleHemisphere = {
      */
     let sample = (r: rng_t, flipped: bool) => {
         let (x, y) = AreaSampleDisk.sample(r);
-        let z = sqrt(max(0.0, ~-.1.0 -. (x *. x) -. (y *. y)));
+        let z = sqrt(max(0.0, 1.0 -. (x *. x) -. (y *. y)));
 
         if (flipped) {
             Vec.xyz(x, y, ~-.1.0 *. z)
@@ -255,7 +255,7 @@ module CosineSampleHemisphere = {
      * whether the hemisphere is on the positive or negative Z-axis.)
      */
     let pdf = (direction: Vec.t) => {
-        Vec.abs_cos_theta(direction) *. (1.0 /. Math.pi)
+        Vec.abs_cos_theta(direction) /. Math.pi
     };
 };
 
