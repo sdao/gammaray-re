@@ -199,7 +199,7 @@ let create_disney_specular_refl_aniso =
     create_standard_microfacet_refl(
             Optics.create_ggx(roughness, anisotropic),
             Optics.create_disney_fresnel(ior_adjusted, color, specular_tint, metallic),
-            color)
+            Vec.one)
 };
 
 let create_disney_specular_refl =
