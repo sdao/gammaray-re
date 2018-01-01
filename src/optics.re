@@ -178,8 +178,8 @@ let create_ggx = (roughness: float, anisotropic: float) => {
 
             /* 2. Simulate P22. */
             let cos_theta = Vec.cos_theta(i_stretched);
-            let u1 = Sampling.next_float(rng);
-            let u2 = Sampling.next_float(rng);
+            let u1 = Sampling.next_float_unit(rng);
+            let u2 = Sampling.next_float_unit(rng);
             let (slope_x, slope_y) = this#sample11(cos_theta, u1, u2);
 
             /* 3. Rotate and 4. Unstretch. */
@@ -233,9 +233,10 @@ let create_gtr1 = (clearcoat_gloss: float) => {
         pub g = (i: Vec.t, o: Vec.t) => 1.0 /. (1.0 +. this#lambda(i) +. this#lambda(o));
         pub sample_half = (i: Vec.t, rng: Sampling.rng_t) => {
             let alpha2 = this#alpha *. this#alpha;
-            let phi = 2.0 *. Math.pi *. Sampling.next_float(rng);
+            let phi = 2.0 *. Math.pi *. Sampling.next_float_unit(rng);
             let cos_theta = sqrt(Math.clamp_unit(
-                    (1.0 -. (alpha2 ** (1.0 -. Sampling.next_float(rng))) /. (1.0 -. alpha2))));
+                    (1.0 -.
+                    (alpha2 ** (1.0 -. Sampling.next_float_unit(rng))) /. (1.0 -. alpha2))));
             let h = Vec.from_spherical(cos_theta, phi);
             if (Vec.is_local_same_hemisphere(h, i)) {
                 h

@@ -83,6 +83,9 @@ let next_float_range = (r: rng_t, a: float, b: float) => {
     a +. next_float(r) *. (b -. a)
 };
 
+/** Returns the next random float in [0, 1). */
+let next_float_unit = (r: rng_t) => next_float_range(r, 0.0, 1.0);
+
 /**
  * Creates a new XorShift rng seeded from the global rng.
  * Warning: this function is very slow to run because it uses the global Ocalm rng, not XorShift.
@@ -154,8 +157,8 @@ module GaussianDistribution = {
         }
         else {
             let rec nfix_zero = (r: rng_t, hz: int32) => {
-                let x = ~-.log(next_float(r)) /. _d;
-                let y = ~-.log(next_float(r));
+                let x = ~-.log(next_float_unit(r)) /. _d;
+                let y = ~-.log(next_float_unit(r));
                 if ((y +. y) >= (x +. x)) {
                     if (hz > 0l) {
                         _d +. x
@@ -173,7 +176,7 @@ module GaussianDistribution = {
                 if (iz == 0) {
                     nfix_zero(r, hz)
                 }
-                else if ((_fn[iz] +. next_float(r) *. (_fn[iz - 1] -. _fn[iz]))
+                else if ((_fn[iz] +. next_float_unit(r) *. (_fn[iz - 1] -. _fn[iz]))
                         < exp(~-.0.5 *. x *. x)) {
                     x
                 }
@@ -338,7 +341,7 @@ module UniformSampleCone = {
 /** Uniformly samples barycentric coordinates for a triangle. */
 module UniformSampleBarycentric = {
     let sample = (r: rng_t) => {
-        let (a, b) = (next_float(r), next_float(r));
+        let (a, b) = (next_float_unit(r), next_float_unit(r));
         let sqrt_a = sqrt(a);
         (1.0 -. sqrt_a, b *. sqrt_a)
     };
@@ -380,7 +383,7 @@ module CumulativeDistribution = {
      * The pdf of choosing bucket 3 is CDF(3) - CDF(2) = 0.1.
      */
     let sample = (r: rng_t, cdf: array(float)) => {
-        _binary_search(cdf, next_float(r), 0, Array.length(cdf) - 1)
+        _binary_search(cdf, next_float_unit(r), 0, Array.length(cdf) - 1)
     };
 
     /** Probability of choosing the given bucket from the CDF. See sample() for explanation. */

@@ -48,7 +48,7 @@ let rec _path_tracer = (current_ray: Ray.t, bvh: Bvh.t, rng: Sampling.rng_t, dep
                 /* Do Russian Roulette if this path is "old". */
                 let rr_throughput =
                     if (depth > _russian_roulette_depth || Vec.is_nearly_zero(new_throughput)) {
-                        let rv = Sampling.next_float(rng);
+                        let rv = Sampling.next_float_unit(rng);
 
                         let prob_live = if (depth > _russian_roulette_depth_agressive) {
                             Math.clamped_lerp(0.10, 0.75, Vec.luminance(new_throughput))
