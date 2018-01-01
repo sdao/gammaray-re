@@ -37,7 +37,7 @@ let fresnel_dielectric = (cos_theta_in: float, ior: float) => {
         let r_parl = ((eta_t *. cos_theta_in_clamped) -. (eta_i *. cos_theta_trans)) /.
                      ((eta_t *. cos_theta_in_clamped) +. (eta_i *. cos_theta_trans));
         let r_perp = ((eta_i *. cos_theta_in_clamped) -. (eta_t *. cos_theta_trans)) /.
-                     ((eta_t *. cos_theta_in_clamped) +. (eta_t *. cos_theta_trans));
+                     ((eta_i *. cos_theta_in_clamped) +. (eta_t *. cos_theta_trans));
         (r_parl *. r_parl +. r_perp *. r_perp) /. 2.0
     }
 };
