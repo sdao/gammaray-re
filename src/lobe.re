@@ -149,7 +149,7 @@ let create_standard_microfacet_refl =
                 let fresnel = this#fresnel(Vec.dot(o, half));
                 let d = this#microfacet#d(half);
                 let g = this#microfacet#g(i, o);
-                (this#color *^ fresnel) *^. (d *. g /. (1.0 *. cos_theta_out *. cos_theta_in))
+                (this#color *^ fresnel) *^. (d *. g /. (4.0 *. cos_theta_out *. cos_theta_in))
             }
         };
         pub pdf = (i: Vec.t, o: Vec.t) => {
