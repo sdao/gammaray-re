@@ -9,8 +9,8 @@ let constant_color: t = (_: Ray.t, _: Bvh.t, _: Sampling.rng_t) => {
 
 let display_color: t = (initial_ray: Ray.t, bvh: Bvh.t, _: Sampling.rng_t) => {
     switch (Bvh.intersect(bvh, initial_ray)) {
-        | Hit(_: float, _: SurfaceProperties.t, prim_index: int) => {
-            Bvh.prim(bvh, prim_index)#material.display_color
+        | Hit(_: float, _: SurfaceProperties.t, prim: Prim.t) => {
+            prim#material.display_color
         }
         | NoHit => {
             Vec.zero
@@ -29,12 +29,11 @@ let rec _path_tracer = (current_ray: Ray.t, bvh: Bvh.t, rng: Sampling.rng_t, dep
     }
     else {
         let (current_ray_, light_, throughput_) = switch (Bvh.intersect(bvh, current_ray)) {
-            | Hit(dist: float, surface_props: SurfaceProperties.t, prim_index: int) => {
+            | Hit(dist: float, surface_props: SurfaceProperties.t, prim: Prim.t) => {
                 /* Check for scattering (reflection/transmission).
                  * Note: the material pipeline expects the incoming direction to face away from
                  * the hit point (i.e. toward the previous hit point or eye). */
                 let incoming_world = ~-^current_ray.dir;
-                let prim = Bvh.prim(bvh, prim_index);
                 let sample = Material.sample_world(prim#material,
                         incoming_world, surface_props, true, rng);
 
