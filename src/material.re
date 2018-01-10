@@ -7,6 +7,12 @@ type t = {
     lobes: array(Lobe.t),
 };
 
+let empty = {
+    display_color: Vec.zero,
+    light: None,
+    lobes: [||],
+};
+
 let create_debug = (display_color: Vec.t) => {
     {
         display_color: display_color,

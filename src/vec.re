@@ -278,4 +278,13 @@ let lerp = (a: t, b: t, k: float) => {
         Math.lerp(a.x, b.x, k),
         Math.lerp(a.y, b.y, k),
         Math.lerp(a.z, b.z, k))
-}
+};
+
+let get = (v: t, i: int) => {
+    switch (i) {
+        | 0 => v.x
+        | 1 => v.y
+        | 2 => v.z
+        | _ => assert(false)
+    }
+};
