@@ -8,6 +8,6 @@
   },
   "devDependencies": {},
   "dependencies": {
-    "bs-platform": "github:bsansouci/bsb-native#fast"
+    "bsb-native": "4.0.6"
   }
 }
